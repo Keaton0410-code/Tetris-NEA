@@ -5,75 +5,70 @@ import pygame as pg
 
 class Block(pg.sprite.Sprite):
     def __init__(self, tetromino, pos, is_next_piece=False):
-        # Always initialize as Sprite
+        # Always initialise as a Sprite
         pg.sprite.Sprite.__init__(self)
-        
+
         self.tetromino = tetromino
         self.alive = True
         self.is_next_piece = is_next_piece
-        
-        # Set position
+
+        #Set positions
         if is_next_piece:
             self.pos = vec(pos) + NEXT_TETROMINO_POS
         else:
             self.pos = vec(pos) + INIT_POS_OFFSET
-        
-        # Get or create image
+
+        #Get or create image
         if tetromino.image:
             self.image = tetromino.image
         else:
-            # Create colored block
+            #Create coloured block (fallback if sprites are missing)
             self.image = pg.Surface((TILE_SIZE, TILE_SIZE))
-            colors = {
-                'T': (255, 0, 255),    # Purple
-                'O': (255, 255, 0),    # Yellow
-                'J': (0, 0, 255),      # Blue
-                'L': (255, 165, 0),    # Orange
-                'I': (0, 255, 255),    # Cyan
-                'S': (0, 255, 0),      # Green
-                'Z': (255, 0, 0)       # Red
+            colours_by_shape = {
+                'T': (255, 0, 255),    #Purple
+                'O': (255, 255, 0),    #Yellow
+                'J': (0, 0, 255),      #Blue
+                'L': (255, 165, 0),    #Orange
+                'I': (0, 255, 255),    #Cyan
+                'S': (0, 255, 0),      #Green
+                'Z': (255, 0, 0)       #Red
             }
-            color = colors.get(tetromino.shape, (200, 200, 200))
-            self.image.fill(color)
+            colour = colours_by_shape.get(tetromino.shape, (200, 200, 200))
+            self.image.fill(colour)
             pg.draw.rect(self.image, (255, 255, 255), (0, 0, TILE_SIZE, TILE_SIZE), 2)
-        
         self.rect = self.image.get_rect()
-        
-        # Only add to sprite group if not a simulation
+
+        # Only add to sprite group if this is not a training game
         if not tetromino.tetris.is_simulation and tetromino.tetris.sprite_group is not None:
             tetromino.tetris.sprite_group.add(self)
 
     def rotate(self, pivot_pos):
-        translated = self.pos - pivot_pos
-        rotated = translated.rotate(90)
-        return rotated + pivot_pos
+        translated_position = self.pos - pivot_pos
+        rotated_position = translated_position.rotate(90)
+        return rotated_position + pivot_pos
 
     def update(self):
         if not self.alive:
             self.kill()
             return
-            
+
         # Update sprite position
-        display_pos = self.pos
-        
+        block_grid_position = self.pos
         if hasattr(self.tetromino.tetris, 'offset_tiles'):
-            offset = self.tetromino.tetris.offset_tiles
-            self.rect.topleft = (display_pos + offset) * TILE_SIZE
+            grid_offset_tiles = self.tetromino.tetris.offset_tiles
+            self.rect.topleft = (block_grid_position + grid_offset_tiles) * TILE_SIZE
         else:
-            self.rect.topleft = display_pos * TILE_SIZE
+            self.rect.topleft = block_grid_position * TILE_SIZE
 
     def has_collided(self, test_pos):
-        x, y = int(test_pos.x), int(test_pos.y)
-        
-        if x < 0 or x >= FIELD_W or y >= FIELD_H:
+        grid_x, grid_y = int(test_pos.x), int(test_pos.y)
+
+        if grid_x < 0 or grid_x >= FIELD_W or grid_y >= FIELD_H:
             return True
-            
-        if y < 0:
+        if grid_y < 0:
             return False
-            
-        if self.tetromino.tetris.field_array[y][x]:
+        if self.tetromino.tetris.field_array[grid_y][grid_x]:
             return True
-            
         return False
 
 
@@ -83,17 +78,17 @@ class Tetromino:
         self.shape = random.choice(list(TETROMINOES.keys()))
         self.landing = False
         self.current_shape = current_shape
-        
-        # Get image
+
+        # Get sprite, if in directory
         if hasattr(tetris, 'images') and tetris.images:
             self.image = random.choice(tetris.images)
         else:
             self.image = None
-        
-        # Create blocks
+
+        #Create blocks
         self.blocks = []
-        for pos in TETROMINOES[self.shape]:
-            block = Block(self, pos, is_next_piece=not current_shape)
+        for relative_pos in TETROMINOES[self.shape]:
+            block = Block(self, relative_pos, is_next_piece=not current_shape)
             self.blocks.append(block)
 
     @property
@@ -105,30 +100,30 @@ class Tetromino:
     def rotate(self):
         if not self.blocks:
             return
-            
+
         pivot_pos = self.blocks[0].pos
-        new_positions = [block.rotate(pivot_pos) for block in self.blocks]
-        
-        if not self.has_collided(new_positions):
-            for i, block in enumerate(self.blocks):
-                block.pos = new_positions[i]
+        rotated_positions = [block.rotate(pivot_pos) for block in self.blocks]
+
+        if not self.has_collided(rotated_positions):
+            for index, block in enumerate(self.blocks):
+                block.pos = rotated_positions[index]
 
     def has_collided(self, positions):
-        for block, pos in zip(self.blocks, positions):
-            if block.has_collided(pos):
+        for block, test_pos in zip(self.blocks, positions):
+            if block.has_collided(test_pos):
                 return True
         return False
 
     def move(self, direction):
         if not self.blocks:
             return
-            
-        move_dir = MOVE_DIRECTIONS[direction]
-        new_positions = [block.pos + move_dir for block in self.blocks]
-        
-        if not self.has_collided(new_positions):
+
+        move_direction_vector = MOVE_DIRECTIONS[direction]
+        moved_positions = [block.pos + move_direction_vector for block in self.blocks]
+
+        if not self.has_collided(moved_positions):
             for block in self.blocks:
-                block.pos += move_dir
+                block.pos += move_direction_vector
         elif direction == 'down':
             self.landing = True
 

@@ -1,5 +1,4 @@
 AI_CONFIG = {
-
     "n_inputs": 16,
     "n_hidden": 32,
     "n_outputs": 1,

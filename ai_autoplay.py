@@ -7,31 +7,26 @@ from TetrisGame import Tetris, Text
 from ai_tetris import NeuralNet, NeuralNetAgent, load_genes
 from ai_config import AI_CONFIG
 
-
 class AIApp:
     def __init__(self):
         pg.init()
         pg.display.set_caption('AI Tetris')
         self.screen = pg.display.set_mode(WIN_RES)
         self.clock = pg.time.Clock()
-        
-        # Load sprites
         self.images = self.load_sprites()
-        
-        # Set up timers
         self.set_timer()
         
-        # Create game
+        #Create game
         self.tetris = Tetris(self, is_simulation=False)
         self.text = Text(self)
 
-        # Initialize AI network
+        #Initialise AI network
         try:
             genes = load_genes(AI_CONFIG["best_genome_file"])
             print(f"Loaded trained genes from {AI_CONFIG['best_genome_file']}")
             neural_net = NeuralNet(genes=genes)
-        except Exception as e:
-            print(f"Could not load {AI_CONFIG['best_genome_file']}: {e}")
+        except Exception as error:
+            print(f"Could not load {AI_CONFIG['best_genome_file']}: {error}")
             print("Using random neural net weights instead.")
             neural_net = NeuralNet()
 
@@ -51,23 +46,23 @@ class AIApp:
             images = [pg.transform.scale(image, (TILE_SIZE, TILE_SIZE)) for image in images]
             print(f"Loaded {len(images)} sprites for AI mode")
             return images
-        except Exception as e:
-            print(f"Error loading sprites: {e}")
+        except Exception as error:
+            print(f"Error loading sprites: {error}")
             return self.create_default_sprites()
     
     def create_default_sprites(self):
         colors = [
             (255, 0, 0), (0, 255, 0), (0, 0, 255),
             (255, 255, 0), (255, 0, 255), (0, 255, 255),
-            (255, 165, 0)
-        ]
+            (255, 165, 0)]
+        
         sprites = []
         for color in colors:
             surf = pg.Surface((TILE_SIZE, TILE_SIZE), pg.SRCALPHA)
             surf.fill(color)
             pg.draw.rect(surf, (255, 255, 255), (0, 0, TILE_SIZE, TILE_SIZE), 2)
             sprites.append(surf)
-        print("Created default colored sprites for AI mode")
+        print("Using default colored sprites")
         return sprites
 
     def set_timer(self):
@@ -86,7 +81,7 @@ class AIApp:
         if self.ai_move_timer >= self.ai_move_delay:
             self.ai_move_timer = 0
             
-            # Get AI move
+            # AI move
             move = self.ai_agent.choose_move(self.tetris)
             if move:
                 print(f"AI chose move: rotation={move[0]}, target_x={move[1]}")
@@ -102,7 +97,7 @@ class AIApp:
         self.tetris.draw()
         self.text.draw()
 
-        # Draw AI indicator
+        # AI indicator on screen
         font = pg.font.Font(None, 36)
         ai_text = font.render("AI PLAYING", True, (0, 255, 0))
         self.screen.blit(ai_text, (WIN_W * 0.6, WIN_H * 0.92))
@@ -126,14 +121,11 @@ class AIApp:
 
     def run(self):
         print("AI Tetris started!")
-        print("Press SPACE to see current score")
         print("Press ESC to quit")
-
         while True:
             self.check_events()
             self.update()
             self.draw()
-
 
 if __name__ == '__main__':
     app = AIApp()

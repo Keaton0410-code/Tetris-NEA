@@ -5,61 +5,58 @@ from settings import *
 import versus
 
 
-def get_font(size):
-    return pg.font.Font("Tetris NEA/Font/font.ttf", size)
+def get_font(font_size):
+    return pg.font.Font("Tetris NEA/Font/font.ttf", font_size)
 
 
 SCREEN = pg.display.set_mode((1920, 1080))
-BG = pg.image.load("Tetris NEA/Assets/Background.png")
+BACKGROUND_IMAGE = pg.image.load("Tetris NEA/Assets/Background.png")
 
 
 def versus_menu():
     while True:
-        SCREEN.blit(BG, (0, 0))
-        MENU_MOUSE_POS = pg.mouse.get_pos()
+        SCREEN.blit(BACKGROUND_IMAGE, (0, 0))
+        mouse_position = pg.mouse.get_pos()
 
-        TITLE = get_font(90).render("SELECT DIFFICULTY", True, "#b68f40")
-        TITLE_RECT = TITLE.get_rect(center=(960, 180))
-        SCREEN.blit(TITLE, TITLE_RECT)
+        title_text = get_font(90).render("SELECT DIFFICULTY", True, "#b68f40")
+        title_rect = title_text.get_rect(center=(960, 180))
+        SCREEN.blit(title_text, title_rect)
 
-        EASY_BTN = Button(
+        easy_button = Button(
             image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
             pos=(960, 360),
             text_input="EASY",
             font=get_font(75),
             base_color="#d7fcd4",
-            hovering_color="White"
-        )
+            hovering_color="White")
 
-        MEDIUM_BTN = Button(
+        medium_button = Button(
             image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
             pos=(960, 480),
             text_input="MEDIUM",
             font=get_font(75),
             base_color="#d7fcd4",
-            hovering_color="White"
-        )
+            hovering_color="White")
 
-        HARD_BTN = Button(
+        hard_button = Button(
             image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
             pos=(960, 600),
             text_input="HARD",
             font=get_font(75),
             base_color="#d7fcd4",
-            hovering_color="White"
-        )
+            hovering_color="White")
 
-        BACK_BTN = Button(
+        back_button = Button(
             image=None,
             pos=(960, 740),
             text_input="BACK",
             font=get_font(75),
             base_color="Black",
-            hovering_color="Green"
-        )
+            hovering_color="Green")
 
-        for button in [EASY_BTN, MEDIUM_BTN, HARD_BTN, BACK_BTN]:
-            button.changeColor(MENU_MOUSE_POS)
+        menu_buttons = [easy_button, medium_button, hard_button, back_button]
+        for button in menu_buttons:
+            button.changeColor(mouse_position)
             button.update(SCREEN)
 
         for event in pg.event.get():
@@ -68,16 +65,16 @@ def versus_menu():
                 sys.exit()
 
             if event.type == pg.MOUSEBUTTONDOWN:
-                if EASY_BTN.checkForInput(MENU_MOUSE_POS):
+                if easy_button.checkForInput(mouse_position):
                     versus.VersusApp(difficulty="easy").run()
 
-                if MEDIUM_BTN.checkForInput(MENU_MOUSE_POS):
+                if medium_button.checkForInput(mouse_position):
                     versus.VersusApp(difficulty="medium").run()
 
-                if HARD_BTN.checkForInput(MENU_MOUSE_POS):
+                if hard_button.checkForInput(mouse_position):
                     versus.VersusApp(difficulty="hard").run()
 
-                if BACK_BTN.checkForInput(MENU_MOUSE_POS):
+                if back_button.checkForInput(mouse_position):
                     return
 
         pg.display.update()

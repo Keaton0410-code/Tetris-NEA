@@ -6,14 +6,12 @@ from ai_tetris import GeneticAlgorithm, save_genes, load_genes, NeuralNet
 from TetrisGame import Tetris
 from ai_config import AI_CONFIG
 
-
 def game_factory():
     class DummyApp:
-        images = []    # Tetromino shouldn't use this in simulation
+        images = []    # Tetromino doesn't need this in simulation (nothing is displayed training in background essentially)
         animation_trigger = True
         fast_animation_trigger = False
     return Tetris(DummyApp(), is_simulation=True)
-
 
 def seed_population_from_best(ga, best_genes, clones=8):
     """
@@ -25,10 +23,9 @@ def seed_population_from_best(ga, best_genes, clones=8):
         child = ga.mutate(child)
         ga.population[i] = child
 
-
 def train():
     pg.init()
-    print(" Training GA on 16–32–1 Network")
+    print(" Training GA on 9–16–1 Network")
 
     ga = GeneticAlgorithm(
         pop_size=AI_CONFIG["population_size"],
@@ -36,8 +33,7 @@ def train():
         mutation_rate=AI_CONFIG["mutation_rate"],
         crossover_rate=AI_CONFIG["crossover_rate"],
         eval_seeds=AI_CONFIG["eval_seeds"],
-        max_moves=AI_CONFIG["max_moves"],
-    )
+        max_moves=AI_CONFIG["max_moves"],)
 
     best_path = AI_CONFIG["best_genome_file"]
     if AI_CONFIG.get("resume_from_best", False) and os.path.exists(best_path):
@@ -47,10 +43,10 @@ def train():
 
         seed_population_from_best(ga, best_genes, clones=AI_CONFIG.get("seed_clones", 8))
 
-        print(f" Resuming from {best_path}")
-        print(f"   Loaded best fitness: {ga.best_fitness:.2f}")
+        print(f"Resuming from {best_path}")
+        print(f"Loaded best fitness: {ga.best_fitness:.2f}")
     else:
-        print("ℹStarting from scratch (no resume genome found / resume disabled).")
+        print("Starting from scratch (no genome found).")
 
     generations = AI_CONFIG["generations"]
 
