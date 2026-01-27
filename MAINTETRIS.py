@@ -18,27 +18,6 @@ class App:
         self.tetris = Tetris(self)
         self.text = Text(self)
 
-        self.ai_mode = ai_mode
-        if self.ai_mode:
-            from ai_tetris import NeuralNet, NeuralNetAgent, load_genes
-            from ai_config import AI_CONFIG
-
-            try:
-                genome_genes = load_genes(AI_CONFIG["best_genome_file"])
-                neural_network = NeuralNet(genes=genome_genes)
-                print("Loaded trained AI genome successfully!")
-            except:
-                print("No trained genome found. Using a random neural network.")
-                neural_network = NeuralNet()
-
-            self.ai_agent = NeuralNetAgent(neural_network)
-
-            self.ai_move_timer = 0
-            self.ai_move_delay = AI_CONFIG["ai_move_delay"]
-
-            self.current_ai_move = None
-            self.has_executed_current_move = False
-
     def load_sprites(self):
         sprite_files = [item for item in pathlib.Path(SPRITE_DIRECTORY_PATH).rglob('*.png')if item.is_file()]
         if not sprite_files:
@@ -137,10 +116,10 @@ class App:
             self.draw()
 
 def get_font(font_size):
-    return pg.font.Font("Tetris NEA/Font/font.ttf", font_size)
+    return pg.font.Font("Tetris-NEA-main/Font/font.ttf", font_size)
 
 SCREEN = pg.display.set_mode((1920, 1080))
-BACKGROUND_IMAGE = pg.image.load("Tetris NEA/Assets/Background.png")
+BACKGROUND_IMAGE = pg.image.load("Tetris-NEA-main/Assets/Background.png")
 
 def play():
     App(ai_mode=False).run()
@@ -162,26 +141,20 @@ def main_menu():
             get_font(75),
             "#d7fcd4", "White")
 
-        ai_play_button = Button(
-            pg.image.load("Tetris NEA/Assets/Play Rect.png"), (640, 320),
-            "AI PLAY",
-            get_font(75),
-            "#d7fcd4", "White")
-
         versus_button = Button(
-            pg.image.load("Tetris NEA/Assets/Play Rect.png"), (640, 680),
+            pg.image.load("Tetris-NEA-main/Assets/Play Rect.png"), (640, 680),
             "AI VS HUMAN",
             get_font(75),
             "#d7fcd4", "White")
 
         options_button = Button(
-            pg.image.load("Tetris NEA/Assets/Options Rect.png"), (640, 440),
+            pg.image.load("Tetris-NEA-main/Assets/Options Rect.png"), (640, 440),
             "OPTIONS",
             get_font(75),
             "#d7fcd4", "White")
 
         quit_button = Button(
-            pg.image.load("Tetris NEA/Assets/Quit Rect.png"),(640, 560),
+            pg.image.load("Tetris-NEA-main/Assets/Quit Rect.png"),(640, 560),
             "QUIT",
             get_font(75),
             "#d7fcd4", "White")

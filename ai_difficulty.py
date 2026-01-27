@@ -1,8 +1,6 @@
 import random
 
 from settings import FIELD_W, FIELD_H
-from ai_tetris import NeuralNet, NeuralNetAgent, extract_features, load_genes
-from ai_config import AI_CONFIG
 from TetrisGame import Tetris
 
 # EASY AI – random move
@@ -47,37 +45,6 @@ class MediumAI:
                 best_move = candidate_move
         return best_move
 
-# HARD AI – trained NN reverts to medium if genome missing/ nothing found in file
-class HardAI:
-    def __init__(self, genome_path=None):
-        if genome_path is None:
-            genome_path = AI_CONFIG["best_genome_file"]
-
-        self.fallback_ai = MediumAI()  #fallback if genome is missing
-
-        try:
-            genome_genes = load_genes(genome_path)
-            print(f"Loaded Hard AI genome from {genome_path}")
-
-            neural_network = NeuralNet(genes=genome_genes)
-            self.neural_network_agent = NeuralNetAgent(neural_network)
-
-            self.is_ready = True
-
-        except FileNotFoundError:
-            print(f"[HardAI] Genome file '{genome_path}' not found. Revertingto Medium AI.")
-            self.neural_network_agent = None
-            self.is_ready = False
-
-        except Exception as error:
-            print(f"[HardAI] Error loading genome: {error}. Reverting Medium AI.")
-            self.neural_network_agent = None
-            self.is_ready = False
-
-    def choose_move(self, game: Tetris):
-        if not self.is_ready:
-            return self.fallback_ai.choose_move(game)
-        return self.neural_network_agent.choose_move(game)
 
 # Difficulty selector
 def get_ai_by_difficulty(difficulty_name: str):
@@ -86,8 +53,6 @@ def get_ai_by_difficulty(difficulty_name: str):
         return EasyAI()
     if difficulty_name == "medium":
         return MediumAI()
-    if difficulty_name == "hard":
-        return HardAI()
 
     print(f"[AI Difficulty] Unknown difficulty '{difficulty_name}', defaulting to Medium")
     return MediumAI()

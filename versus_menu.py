@@ -6,11 +6,11 @@ import versus
 
 
 def get_font(font_size):
-    return pg.font.Font("Tetris NEA/Font/font.ttf", font_size)
+    return pg.font.Font("Tetris-NEA-main/Font/font.ttf", font_size)
 
 
 SCREEN = pg.display.set_mode((1920, 1080))
-BACKGROUND_IMAGE = pg.image.load("Tetris NEA/Assets/Background.png")
+BACKGROUND_IMAGE = pg.image.load("Tetris-NEA-main/Assets/Background.png")
 
 
 def versus_menu():
@@ -23,7 +23,7 @@ def versus_menu():
         SCREEN.blit(title_text, title_rect)
 
         easy_button = Button(
-            image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
+            image=pg.image.load("Tetris-NEA-main/Assets/Play Rect.png"),
             pos=(960, 360),
             text_input="EASY",
             font=get_font(75),
@@ -31,7 +31,7 @@ def versus_menu():
             hovering_color="White")
 
         medium_button = Button(
-            image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
+            image=pg.image.load("Tetris-NEA-main/Assets/Play Rect.png"),
             pos=(960, 480),
             text_input="MEDIUM",
             font=get_font(75),
@@ -39,7 +39,7 @@ def versus_menu():
             hovering_color="White")
 
         hard_button = Button(
-            image=pg.image.load("Tetris NEA/Assets/Play Rect.png"),
+            image=pg.image.load("Tetris-NEA-main/Assets/Play Rect.png"),
             pos=(960, 600),
             text_input="HARD",
             font=get_font(75),

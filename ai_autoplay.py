@@ -4,8 +4,7 @@ import pathlib
 
 from settings import *
 from TetrisGame import Tetris, Text
-from ai_tetris import NeuralNet, NeuralNetAgent, load_genes
-from ai_config import AI_CONFIG
+
 
 class AIApp:
     def __init__(self):

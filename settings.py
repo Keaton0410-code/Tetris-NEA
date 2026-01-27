@@ -17,8 +17,8 @@ FIELD_COLOUR = FIELD_COLOR
 BACKGROUND_COLOUR = BG_COLOUR
 
 # Assets / paths directories
-SPRITE_DIRECTORY_PATH = 'Tetris NEA/Assets/sprites'
-FONT_PATH = 'Tetris NEA/Font/Game-Font 2.ttf'
+SPRITE_DIRECTORY_PATH = 'Tetris-NEA-main/Assets/sprites'
+FONT_PATH = 'Tetris-NEA/Font-main/Game-Font 2.ttf'
 
 # Grid / window sizing
 TILE_SIZE = 50

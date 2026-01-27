@@ -1,6 +1,6 @@
 from settings import *
 import math
-from Tetromino import Tetromino, Block
+
 import pygame.freetype as ft
 import pygame as pg
 
