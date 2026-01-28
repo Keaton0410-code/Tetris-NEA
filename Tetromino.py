@@ -12,33 +12,34 @@ class Block(pg.sprite.Sprite):
         self.alive = True
         self.is_next_piece = is_next_piece
 
-        #Set positions
+        # Set positions
         if is_next_piece:
             self.pos = vec(pos) + NEXT_TETROMINO_POS
         else:
             self.pos = vec(pos) + INIT_POS_OFFSET
 
-        #Get or create image
+        # Get or create image
         if tetromino.image:
             self.image = tetromino.image
         else:
-            #Create coloured block (fallback if sprites are missing)
+            # Create coloured block (fallback if sprites are missing)
             self.image = pg.Surface((TILE_SIZE, TILE_SIZE))
             colours_by_shape = {
-                'T': (255, 0, 255),    #Purple
-                'O': (255, 255, 0),    #Yellow
-                'J': (0, 0, 255),      #Blue
-                'L': (255, 165, 0),    #Orange
-                'I': (0, 255, 255),    #Cyan
-                'S': (0, 255, 0),      #Green
-                'Z': (255, 0, 0)       #Red
+                'T': (255, 0, 255),    # Purple
+                'O': (255, 255, 0),    # Yellow
+                'J': (0, 0, 255),      # Blue
+                'L': (255, 165, 0),    # Orange
+                'I': (0, 255, 255),    # Cyan
+                'S': (0, 255, 0),      # Green
+                'Z': (255, 0, 0)       # Red
             }
             colour = colours_by_shape.get(tetromino.shape, (200, 200, 200))
             self.image.fill(colour)
             pg.draw.rect(self.image, (255, 255, 255), (0, 0, TILE_SIZE, TILE_SIZE), 2)
+
         self.rect = self.image.get_rect()
 
-        # Only add to sprite group if this is not a training game
+        # Only add to sprite group if this is not a simulation game
         if not tetromino.tetris.is_simulation and tetromino.tetris.sprite_group is not None:
             tetromino.tetris.sprite_group.add(self)
 
@@ -73,19 +74,25 @@ class Block(pg.sprite.Sprite):
 
 
 class Tetromino:
-    def __init__(self, tetris, current_shape=True):
+    def __init__(self, tetris, current_shape=True, rng=None):
         self.tetris = tetris
-        self.shape = random.choice(list(TETROMINOES.keys()))
         self.landing = False
         self.current_shape = current_shape
 
-        # Get sprite, if in directory
+        # Use a per-board random generator if provided (prevents boards sharing the same sequence)
+        # If rng is None, fall back to Python's global random module (works as before).
+        self.random_generator = rng if rng is not None else random
+
+        # Choose a shape using the correct random source
+        self.shape = self.random_generator.choice(list(TETROMINOES.keys()))
+
+        # Get sprite, if in directory (also chosen with the same RNG for consistency)
         if hasattr(tetris, 'images') and tetris.images:
-            self.image = random.choice(tetris.images)
+            self.image = self.random_generator.choice(tetris.images)
         else:
             self.image = None
 
-        #Create blocks
+        # Create blocks
         self.blocks = []
         for relative_pos in TETROMINOES[self.shape]:
             block = Block(self, relative_pos, is_next_piece=not current_shape)
