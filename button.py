@@ -8,25 +8,24 @@ class Button:
         base_color=None,
         hovering_color=None,
         base_colour=None,
-        hovering_colour=None,
-    ):
-        # Store button image (can be None)
+        hovering_colour=None,):
+
         self.image = image
 
-        # Button centre position
+        #Button centre position
         self.x_position = pos[0]
         self.y_position = pos[1]
 
         # Font must be provided to render text
         self.font = font
         if self.font is None:
-            raise ValueError("Button requires a valid font object")
+            raise ValueError("Button requires font object")
 
-        # Support both UK and US spellings
+        # Support both UK and US spellings (swapping systems would cause issues with spellings - e.g base_colour not found should be base_color) so made this accept both just so i didnt have to debug
         self.base_colour = base_colour if base_colour is not None else base_color
         self.hovering_colour = hovering_colour if hovering_colour is not None else hovering_color
 
-        # Sensible defaults to avoid crashes if not provided
+        #defaults to avoid crashes 
         if self.base_colour is None:
             self.base_colour = "White"
         if self.hovering_colour is None:
@@ -34,7 +33,7 @@ class Button:
 
         self.text_input = text_input
 
-        # Render text surface
+        # Render text 
         self.text_surface = self.font.render(self.text_input, True, self.base_colour)
 
         # If no image is provided, use the text surface as the clickable image
@@ -53,8 +52,7 @@ class Button:
     def checkForInput(self, mouse_position):
         return (
             mouse_position[0] in range(self.rect.left, self.rect.right)
-            and mouse_position[1] in range(self.rect.top, self.rect.bottom)
-        )
+            and mouse_position[1] in range(self.rect.top, self.rect.bottom))
 
     def changeColor(self, mouse_position):
         if self.checkForInput(mouse_position):

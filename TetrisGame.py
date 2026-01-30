@@ -189,9 +189,7 @@ class Tetris:
             self.next_tetromino = Tetromino(self, current_shape=False, rng=self.random_generator)
             self.tetromino.landing = False
 
-    # -----------------------------
     # Controls (Practice mode + Match mode)
-    # -----------------------------
     def control(self, pressed_key):
         """Practice mode controls (arrow keys)."""
         if pressed_key == pg.K_LEFT:
@@ -214,9 +212,7 @@ class Tetris:
         elif action_name == "down":
             self.speed_up = True
 
-    # -----------------------------
     # Rendering / update
-    # -----------------------------
     def draw_grid(self):
         if self.is_simulation:
             return

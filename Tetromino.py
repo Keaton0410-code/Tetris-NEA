@@ -79,8 +79,6 @@ class Tetromino:
         self.landing = False
         self.current_shape = current_shape
 
-        # Use a per-board random generator if provided (prevents boards sharing the same sequence)
-        # If rng is None, fall back to Python's global random module (works as before).
         self.random_generator = rng if rng is not None else random
 
         # Choose a shape using the correct random source

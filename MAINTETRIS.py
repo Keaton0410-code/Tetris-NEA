@@ -10,32 +10,20 @@ import pygame as pg
 _font_cache = {}
 _font_warning_shown = False
 
-
 class App:
     """
-    Solo Tetris app.
-    - ai_mode=False: human practice (arrow keys)
-    - ai_mode=True: AI plays solo using provided ai_agent (easy/medium)
+    Solo Tetris app for practice or solo play (uses arrow keys).
     """
-    def __init__(self, ai_mode=False, ai_agent=None, ai_move_delay=20):
+    def __init__(self):
         pg.display.set_caption("Tetris")
         self.screen = pg.display.set_mode(WIN_RES)
         self.clock = pg.time.Clock()
-
-        self.ai_mode = ai_mode
-        self.ai_agent = ai_agent
-        self.ai_move_delay = ai_move_delay
 
         self.set_timer()
         self.images = self.load_sprites()
 
         self.tetris = Tetris(self)
         self.text = Text(self)
-
-        # AI control state
-        self.ai_move_timer = 0
-        self.has_executed_current_move = False
-        self.current_ai_move = None
 
     def load_sprites(self):
         sprite_files = [item for item in pathlib.Path(SPRITE_DIRECTORY_PATH).rglob("*.png") if item.is_file()]
@@ -57,51 +45,7 @@ class App:
         pg.time.set_timer(self.normal_tick_event, ANIMATION_TIME_INTERVAL)
         pg.time.set_timer(self.fast_tick_event, FAST_ANIMAMATION_TIME_INTERVAL)
 
-    def ai_control(self):
-        if not self.ai_agent:
-            return
-
-        self.ai_move_timer += 1
-        if self.ai_move_timer >= self.ai_move_delay:
-            self.ai_move_timer = 0
-
-            if not self.has_executed_current_move:
-                chosen_move = self.ai_agent.choose_move(self.tetris)
-                if chosen_move:
-                    self.current_ai_move = chosen_move
-                    self.execute_ai_move(chosen_move)
-                    self.has_executed_current_move = True
-
-        # Allow a new move when a new tetromino is near the spawn area
-        if self.tetris.tetromino.pos.y <= INIT_POS_OFFSET.y + 1:
-            self.has_executed_current_move = False
-
-    def execute_ai_move(self, move):
-        if not move:
-            return
-
-        rotations, target_x_position = move
-
-        for _ in range(rotations):
-            self.tetris.tetromino.rotate()
-
-        current_x_position = int(self.tetris.tetromino.blocks[0].pos.x)
-        horizontal_shift = target_x_position - current_x_position
-
-        if horizontal_shift > 0:
-            for _ in range(horizontal_shift):
-                self.tetris.tetromino.move("right")
-        elif horizontal_shift < 0:
-            for _ in range(abs(horizontal_shift)):
-                self.tetris.tetromino.move("left")
-
-        # Drop quickly once positioned
-        self.tetris.speed_up = True
-
     def update(self):
-        if self.ai_mode:
-            self.ai_control()
-
         self.tetris.update()
         self.clock.tick(FPS)
 
@@ -109,12 +53,6 @@ class App:
         self.screen.fill(color=BG_COLOUR)
         self.tetris.draw()
         self.text.draw()
-
-        if self.ai_mode:
-            status_font = pg.font.Font(None, 36)
-            ai_status_text = status_font.render("AI MODE", True, (0, 255, 0))
-            self.screen.blit(ai_status_text, (WIN_W * 0.62, WIN_H * 0.92))
-
         pg.display.flip()
 
     def check_events(self):
@@ -127,8 +65,7 @@ class App:
                 sys.exit()
 
             elif event.type == pg.KEYDOWN:
-                if not self.ai_mode:
-                    self.tetris.control(event.key)
+                self.tetris.control(event.key)
 
             elif event.type == self.normal_tick_event:
                 self.animation_trigger = True
@@ -145,8 +82,8 @@ class App:
 
 def get_font(font_size):
     """
-    Load custom font with fallback to pygame default font.
-    Uses caching to avoid repeated file access and warnings.
+    Load custom font has error handling to pygame font.
+    Uses caching to avoid repeated file access and warnings way to many printed statments if font is missing. this stops it and stores for deletion 
     """
     global _font_cache, _font_warning_shown
     
@@ -171,70 +108,71 @@ def get_font(font_size):
         return font
 
 
-def load_background():
-    """
-    Load background image with error handling.
-    """
-    paths_to_try = [
-        "Tetris-NEA-main/Assets/Background.png",
-        "Assets/Background.png",
-        "Background.png"
-    ]
-    
-    for path in paths_to_try:
-        try:
-            return pg.image.load(path)
-        except:
-            continue
-    
-    return None
+def create_gradient_surface(width, height, color1, color2):
+    """Create a vertical gradient surface."""
+    surface = pg.Surface((width, height))
+    for y in range(height):
+        blend_ratio = y / height
+        r = int(color1[0] * (1 - blend_ratio) + color2[0] * blend_ratio)
+        g = int(color1[1] * (1 - blend_ratio) + color2[1] * blend_ratio)
+        b = int(color1[2] * (1 - blend_ratio) + color2[2] * blend_ratio)
+        pg.draw.line(surface, (r, g, b), (0, y), (width, y))
+    return surface
 
 
-def load_button_image(filename):
-    """
-    Load button image with error handling.
-    Returns None if image not found (button will use text-only mode).
-    """
-    paths_to_try = [
-        f"Tetris-NEA-main/Assets/{filename}",
-        f"Assets/{filename}",
-        filename
-    ]
+def draw_modern_button(surface, rect, text, font, is_hovering, base_color=(70, 130, 180), hover_color=(100, 160, 210)):
+    # Shadow
+    shadow_rect = rect.copy()
+    shadow_rect.x += 5
+    shadow_rect.y += 5
+    pg.draw.rect(surface, (0, 0, 0, 128), shadow_rect, border_radius=15)
     
-    for path in paths_to_try:
-        try:
-            return pg.image.load(path)
-        except:
-            continue
+    # Button background
+    if is_hovering:
+        color = hover_color
+    else:
+        color = base_color
     
-    return None
+    pg.draw.rect(surface, color, rect, border_radius=15)
+    pg.draw.rect(surface, (255, 255, 255, 100), rect, width=2, border_radius=15)
+    
+    # Text
+    text_surface = font.render(text, True, (255, 255, 255))
+    text_rect = text_surface.get_rect(center=rect.center)
+    surface.blit(text_surface, text_rect)
 
 
-# ----------------------------
-# Solo modes
-# ----------------------------
+class ModernButton:
+    """button with cool visuals."""
+    def __init__(self, rect, text, font, base_color=(70, 130, 180), hover_color=(100, 160, 210)):
+        self.rect = pg.Rect(rect)
+        self.text = text
+        self.font = font
+        self.base_color = base_color
+        self.hover_color = hover_color
+        self.is_hovering = False
+    
+    def update(self, mouse_pos):
+        self.is_hovering = self.rect.collidepoint(mouse_pos)
+    
+    def draw(self, surface):
+        draw_modern_button(surface, self.rect, self.text, self.font, self.is_hovering, self.base_color, self.hover_color)
+    
+    def is_clicked(self, mouse_pos):
+        return self.rect.collidepoint(mouse_pos)
+
+# solo mode 
 def play():
-    App(ai_mode=False).run()
+    App().run()
 
-
-def ai_play(difficulty="medium"):
-    from ai_difficulty import get_ai_by_difficulty
-    ai_agent = get_ai_by_difficulty(difficulty)
-    App(ai_mode=True, ai_agent=ai_agent, ai_move_delay=20).run()
-
-
-# ----------------------------
-# Match modes (2–3 boards)
-# ----------------------------
+# Match modes (2–3 boards)/ multiplayer 
 def local_multiplayer_2p():
     from versus import VersusApp
     VersusApp(
         total_players=2,
         cpu_opponents=0,
         cpu_difficulty="medium",
-        player_names=["Player 1", "Player 2"]
-    ).run()
-
+        player_names=["Player 1", "Player 2"]).run()
 
 def local_multiplayer_3p():
     from versus import VersusApp
@@ -242,165 +180,79 @@ def local_multiplayer_3p():
         total_players=3,
         cpu_opponents=0,
         cpu_difficulty="medium",
-        player_names=["Player 1", "Player 2", "Player 3"]
-    ).run()
-
-
-def vs_cpu_2p(cpu_difficulty="medium"):
-    # 1 human vs 1 CPU (2 boards)
-    from versus import VersusApp
-    VersusApp(
-        total_players=2,
-        cpu_opponents=1,
-        cpu_difficulty=cpu_difficulty,
-        player_names=["Player 1", "CPU 1"]
-    ).run()
-
-
-def vs_cpu_3p(cpu_difficulty="medium"):
-    # 1 human vs 2 CPU (3 boards)
-    from versus import VersusApp
-    VersusApp(
-        total_players=3,
-        cpu_opponents=2,
-        cpu_difficulty=cpu_difficulty,
-        player_names=["Player 1", "CPU 1", "CPU 2"]
-    ).run()
-
+        player_names=["Player 1", "Player 2", "Player 3"]).run()
 
 def main_menu():
-    from button import Button
-
-    screen = pg.display.set_mode((1920, 1080))
-    background_image = load_background()
-
+    screen = pg.display.set_mode((1280, 720))
+    pg.display.set_caption("Tetris - Main Menu")
+    
+    #gradient background
+    background = create_gradient_surface(1280, 720, (20, 20, 40), (40, 20, 60))
+    
+    #Button dimensions and positions
+    button_width = 400
+    button_height = 60
+    start_y = 200
+    spacing = 80
+    center_x = 640
+    
+    # Create modern buttons (removed AI PLAY modes)
+    buttons = {
+        'practice': ModernButton((center_x - button_width//2, start_y, button_width, button_height),
+                                 "PRACTICE (SOLO)", get_font(40), (50, 130, 160), (70, 160, 200)),
+        'local_2p': ModernButton((center_x - button_width//2, start_y + spacing, button_width, button_height),
+                                 "LOCAL MULTIPLAYER (2P)", get_font(34), (140, 80, 150), (170, 110, 180)),
+        'local_3p': ModernButton((center_x - button_width//2, start_y + spacing*2, button_width, button_height),
+                                 "LOCAL MULTIPLAYER (3P)", get_font(34), (140, 80, 150), (170, 110, 180)),
+        'vs_cpu': ModernButton((center_x - button_width//2, start_y + spacing*3, button_width, button_height),
+                               "VS CPU", get_font(40), (180, 60, 60), (210, 90, 90)),
+        'quit': ModernButton((center_x - button_width//2, start_y + spacing*4, button_width, button_height),
+                            "QUIT", get_font(40), (80, 80, 80), (110, 110, 110))}
+    clock = pg.time.Clock()
+    
     while True:
-        if background_image:
-            screen.blit(background_image, (0, 0))
-        else:
-            screen.fill((15, 20, 30))
-
-        mouse_position = pg.mouse.get_pos()
-
-        menu_title_text = get_font(100).render("MAIN MENU", True, "#b68f40")
-        screen.blit(menu_title_text, menu_title_text.get_rect(center=(640, 100)))
-
-        # Load button images with fallback (cached after first load)
-        play_rect_img = load_button_image("Play Rect.png")
-        quit_rect_img = load_button_image("Quit Rect.png")
-
-        play_button = Button(
-            image=play_rect_img,
-            pos=(640, 200),
-            text_input="PRACTICE (SOLO)",
-            font=get_font(60),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        ai_easy_button = Button(
-            image=play_rect_img,
-            pos=(640, 310),
-            text_input="AI PLAY (EASY)",
-            font=get_font(60),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        ai_medium_button = Button(
-            image=play_rect_img,
-            pos=(640, 420),
-            text_input="AI PLAY (MEDIUM)",
-            font=get_font(60),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        local_2p_button = Button(
-            image=play_rect_img,
-            pos=(640, 530),
-            text_input="LOCAL MULTIPLAYER (2P)",
-            font=get_font(55),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        local_3p_button = Button(
-            image=play_rect_img,
-            pos=(640, 630),
-            text_input="LOCAL MULTIPLAYER (3P)",
-            font=get_font(55),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        vs_cpu_button = Button(
-            image=play_rect_img,
-            pos=(640, 730),
-            text_input="VS CPU (1–2 CPU)",
-            font=get_font(55),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        quit_button = Button(
-            image=quit_rect_img,
-            pos=(640, 840),
-            text_input="QUIT",
-            font=get_font(60),
-            base_colour="#d7fcd4",
-            hovering_colour="White"
-        )
-
-        buttons = [
-            play_button,
-            ai_easy_button,
-            ai_medium_button,
-            local_2p_button,
-            local_3p_button,
-            vs_cpu_button,
-            quit_button
-        ]
-
-        for button in buttons:
-            button.changeColor(mouse_position)
-            button.update(screen)
-
+        mouse_pos = pg.mouse.get_pos()
+        screen.blit(background, (0, 0))
+        
+        # Draw title with shadow
+        title_font = get_font(90)
+        title_text = "TETRIS"
+        title_shadow = title_font.render(title_text, True, (0, 0, 0))
+        title_surface = title_font.render(title_text, True, (255, 215, 100))
+        title_rect = title_surface.get_rect(center=(640, 100))
+        screen.blit(title_shadow, (title_rect.x + 4, title_rect.y + 4))
+        screen.blit(title_surface, title_rect)
+        
+        # Update and draw buttons
+        for button in buttons.values():
+            button.update(mouse_pos)
+            button.draw(screen)
+        
+        # Event handling
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
-
+            
             if event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE:
                 pg.quit()
                 sys.exit()
-
+            
             if event.type == pg.MOUSEBUTTONDOWN:
-                if play_button.checkForInput(mouse_position):
+                if buttons['practice'].is_clicked(mouse_pos):
                     play()
-
-                if ai_easy_button.checkForInput(mouse_position):
-                    ai_play(difficulty="easy")
-
-                if ai_medium_button.checkForInput(mouse_position):
-                    ai_play(difficulty="medium")
-
-                if local_2p_button.checkForInput(mouse_position):
+                elif buttons['local_2p'].is_clicked(mouse_pos):
                     local_multiplayer_2p()
-
-                if local_3p_button.checkForInput(mouse_position):
+                elif buttons['local_3p'].is_clicked(mouse_pos):
                     local_multiplayer_3p()
-
-                if vs_cpu_button.checkForInput(mouse_position):
+                elif buttons['vs_cpu'].is_clicked(mouse_pos):
                     import versus_menu
                     versus_menu.versus_menu()
-
-                if quit_button.checkForInput(mouse_position):
+                elif buttons['quit'].is_clicked(mouse_pos):
                     pg.quit()
                     sys.exit()
-
-        pg.display.update()
-
+        pg.display.flip()
+        clock.tick(60)
 
 if __name__ == "__main__":
     pg.init()

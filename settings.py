@@ -1,16 +1,15 @@
 import pygame as pg
 
-# Vector type used throughout the project
 vec = pg.math.Vector2
-Vector2 = pg.math.Vector2  # kept as an alias for readability/compatibility
+Vector2 = pg.math.Vector2
 
 # Performance / timing settings
 FPS = 60
 
 ANIMATION_TIME_INTERVAL = 300
-FAST_ANIMAMATION_TIME_INTERVAL = 50  # name kept for compatibility
+FAST_ANIMAMATION_TIME_INTERVAL = 50
 
-# Colours
+#Colours
 FIELD_COLOR = (20, 30, 50)
 BG_COLOUR = (10, 20, 40)
 
@@ -22,17 +21,15 @@ BACKGROUND_COLOUR = BG_COLOUR
 SPRITE_DIRECTORY_PATH = 'Assets/sprites'
 FONT_PATH = 'Font/font.ttf'
 
-
 # Grid / window sizing
 TILE_SIZE = 50
 FIELD_SIZE = FIELD_W, FIELD_H = 10, 20
 FIELD_RES = FIELD_W * TILE_SIZE, FIELD_H * TILE_SIZE
 
-# Default window sizing for SOLO mode (your original scaling)
 FIELD_SCALE_WIDTH, FIELD_SCALE_HEIGHT = 1.7, 1.0
 WIN_RES = WIN_W, WIN_H = FIELD_RES[0] * FIELD_SCALE_WIDTH, FIELD_RES[1] * FIELD_SCALE_HEIGHT
 
-# Fixed full-screen style resolution (useful for 2–3 boards)
+# Fixed full-screen style resolution
 SCREEN_RES = (1920, 1080)
 
 # Aliases (helps write-up + avoids magic numbers elsewhere)
@@ -66,10 +63,6 @@ TETROMINOES = {
     'Z': [(0, 0), (1, 0), (0, -1), (-1, -1)],
 }
 
-# ============================================================
-# Multiplayer / CPU Match additions (NEW)
-# ============================================================
-
 # How many total boards (players) are supported in match modes
 MIN_MATCH_PLAYERS = 2
 MAX_MATCH_PLAYERS = 3
@@ -88,8 +81,7 @@ PLAYER_BOARD_OFFSETS_TILES = [
     vec(MATCH_LEFT_MARGIN_TILES + 2 * (FIELD_W + MATCH_GAP_BETWEEN_BOARDS_TILES), MATCH_TOP_MARGIN_TILES),
 ]
 
-# Controls per player (UK spelling: "practise" is usually UK, but in code we keep "practice" as a mode name)
-# Action names match what your Tetris.control() expects (left/right/up/down)
+
 PLAYER_CONTROLS = {
     1: {  # Player 1: WASD
         'left': pg.K_a,
@@ -126,13 +118,10 @@ DEFAULT_CPU_NAMES = {
     "medium": "CPU Medium",
 }
 
-# Optional: AI move timing for CPU opponents (bigger = slower decisions)
+#AI move timing for CPU opponents (bigger = slower decisions)
 CPU_MOVE_DELAY_FRAMES = {
     "easy": 20,
     "medium": 10,
 }
 
-# Window size for match mode (2–3 boards).
-# We’ll likely use SCREEN_RES in match mode, but keeping this is useful.
-# (Each board is FIELD_W*TILE_SIZE wide; with gaps + margins it fits nicely in 1920x1080.)
 MATCH_WINDOW_RES = SCREEN_RES
