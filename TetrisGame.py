@@ -4,7 +4,7 @@ import random
 import pygame.freetype as ft
 import pygame as pg
 
-from Tetromino import Tetromino, Block  # REQUIRED (your code uses these names)
+from Tetromino import Tetromino, Block  
 
 
 class Text:
@@ -75,7 +75,7 @@ class Tetris:
         self.app = app
         self.is_simulation = is_simulation
 
-        # Per-board random number generator (prevents boards sharing the same sequence)
+        # random number generator (prevents boards sharing the same sequence)
         # If random_seed is None, Python uses a system-based seed.
         self.random_generator = random.Random(random_seed)
 
@@ -253,9 +253,7 @@ class Tetris:
         if self.sprite_group:
             self.sprite_group.draw(self.app.screen)
 
-    # -----------------------------
-    # AI support (kept for Medium CPU)
-    # -----------------------------
+ 
     def get_board_matrix(self):
         board_matrix = [[0 for _ in range(FIELD_W)] for _ in range(FIELD_H)]
 
