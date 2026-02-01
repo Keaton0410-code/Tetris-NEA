@@ -1,24 +1,24 @@
 from settings import *
+
 import random
 import pygame as pg
 
-
 class Block(pg.sprite.Sprite):
     def __init__(self, tetromino, pos, is_next_piece=False):
-        # Always initialise as a Sprite
+        # initialise as a Sprite
         pg.sprite.Sprite.__init__(self)
 
         self.tetromino = tetromino
         self.alive = True
         self.is_next_piece = is_next_piece
 
-        # Set positions
+        #Set positions
         if is_next_piece:
             self.pos = vec(pos) + NEXT_TETROMINO_POS
         else:
             self.pos = vec(pos) + INIT_POS_OFFSET
 
-        # Get or create image
+        #Get or create image
         if tetromino.image:
             self.image = tetromino.image
         else:
@@ -31,8 +31,8 @@ class Block(pg.sprite.Sprite):
                 'L': (255, 165, 0),    # Orange
                 'I': (0, 255, 255),    # Cyan
                 'S': (0, 255, 0),      # Green
-                'Z': (255, 0, 0)       # Red
-            }
+                'Z': (255, 0, 0)}       # Red
+
             colour = colours_by_shape.get(tetromino.shape, (200, 200, 200))
             self.image.fill(colour)
             pg.draw.rect(self.image, (255, 255, 255), (0, 0, TILE_SIZE, TILE_SIZE), 2)
@@ -72,7 +72,6 @@ class Block(pg.sprite.Sprite):
             return True
         return False
 
-
 class Tetromino:
     def __init__(self, tetris, current_shape=True, rng=None):
         self.tetris = tetris
@@ -81,10 +80,10 @@ class Tetromino:
 
         self.random_generator = rng if rng is not None else random
 
-        # Choose a shape using the correct random source
+        #Choose a shape using the correct random source
         self.shape = self.random_generator.choice(list(TETROMINOES.keys()))
 
-        # Get sprite, if in directory (also chosen with the same RNG for consistency)
+        # Get sprite if in directory 
         if hasattr(tetris, 'images') and tetris.images:
             self.image = self.random_generator.choice(tetris.images)
         else:
