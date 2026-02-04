@@ -3,35 +3,33 @@ from settings import *
 import random
 import pygame as pg
 
+
 class Block(pg.sprite.Sprite):
     def __init__(self, tetromino, pos, is_next_piece=False):
-        # initialise as a Sprite
         pg.sprite.Sprite.__init__(self)
 
         self.tetromino = tetromino
         self.alive = True
         self.is_next_piece = is_next_piece
 
-        #Set positions
         if is_next_piece:
             self.pos = vec(pos) + NEXT_TETROMINO_POS
         else:
             self.pos = vec(pos) + INIT_POS_OFFSET
 
-        #Get or create image
         if tetromino.image:
             self.image = tetromino.image
         else:
-            # Create coloured block (fallback if sprites are missing)
             self.image = pg.Surface((TILE_SIZE, TILE_SIZE))
             colours_by_shape = {
-                'T': (255, 0, 255),    # Purple
-                'O': (255, 255, 0),    # Yellow
-                'J': (0, 0, 255),      # Blue
-                'L': (255, 165, 0),    # Orange
-                'I': (0, 255, 255),    # Cyan
-                'S': (0, 255, 0),      # Green
-                'Z': (255, 0, 0)}       # Red
+                "T": (255, 0, 255),
+                "O": (255, 255, 0),
+                "J": (0, 0, 255),
+                "L": (255, 165, 0),
+                "I": (0, 255, 255),
+                "S": (0, 255, 0),
+                "Z": (255, 0, 0),
+            }
 
             colour = colours_by_shape.get(tetromino.shape, (200, 200, 200))
             self.image.fill(colour)
@@ -39,7 +37,6 @@ class Block(pg.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-        # Only add to sprite group if this is not a simulation game
         if not tetromino.tetris.is_simulation and tetromino.tetris.sprite_group is not None:
             tetromino.tetris.sprite_group.add(self)
 
@@ -53,9 +50,8 @@ class Block(pg.sprite.Sprite):
             self.kill()
             return
 
-        # Update sprite position
         block_grid_position = self.pos
-        if hasattr(self.tetromino.tetris, 'offset_tiles'):
+        if hasattr(self.tetromino.tetris, "offset_tiles"):
             grid_offset_tiles = self.tetromino.tetris.offset_tiles
             self.rect.topleft = (block_grid_position + grid_offset_tiles) * TILE_SIZE
         else:
@@ -72,6 +68,7 @@ class Block(pg.sprite.Sprite):
             return True
         return False
 
+
 class Tetromino:
     def __init__(self, tetris, current_shape=True, rng=None):
         self.tetris = tetris
@@ -80,20 +77,16 @@ class Tetromino:
 
         self.random_generator = rng if rng is not None else random
 
-        #Choose a shape using the correct random source
         self.shape = self.random_generator.choice(list(TETROMINOES.keys()))
 
-        # Get sprite if in directory 
-        if hasattr(tetris, 'images') and tetris.images:
+        if hasattr(tetris, "images") and tetris.images:
             self.image = self.random_generator.choice(tetris.images)
         else:
             self.image = None
 
-        # Create blocks
         self.blocks = []
         for relative_pos in TETROMINOES[self.shape]:
-            block = Block(self, relative_pos, is_next_piece=not current_shape)
-            self.blocks.append(block)
+            self.blocks.append(Block(self, relative_pos, is_next_piece=not current_shape))
 
     @property
     def pos(self):
@@ -128,8 +121,8 @@ class Tetromino:
         if not self.has_collided(moved_positions):
             for block in self.blocks:
                 block.pos += move_direction_vector
-        elif direction == 'down':
+        elif direction == "down":
             self.landing = True
 
     def update(self):
-        self.move('down')
+        self.move("down")
